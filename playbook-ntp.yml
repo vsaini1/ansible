@@ -1,0 +1,17 @@
+---
+- name: setup ntp on all servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure NTP is installed
+      yum: name=ntp state=present
+      #OR you can write script
+      shell: |
+      if ! rpm -qa |grep -qw ntp; then
+        yum install -y ntp
+      fi
+      #OR use command for one time use only
+      command: yum install -y ntp
+      
+    - name: Ensure ntp service is up
+      service: name=ntpd state=started enabled=yes
