@@ -1,0 +1,66 @@
+---
+- name: install and restart nginx
+  hosts: webserver
+  remote_user: root
+
+  tasks:
+    - name: create dir for nginx
+      file:
+        path: /path/to/nginx/dir
+        state: directory
+
+    - name: install latest nginx
+      yum:
+        name: nginx
+        state: latest
+
+    - name: write the config file
+      template:
+        src: /srv/config.j2
+        dest: /etc/new.conf
+
+    - name: start nginx
+      service:
+        name: nginx
+        state: started
+
+
+
+- name: update db servers
+  hosts: databases
+  remote_user: root
+
+  tasks:
+  - name: ensure postgresql is at the latest version
+    yum:
+      name: postgresql
+      state: latest
+  - name: ensure that postgresql is started
+    service:
+      name: postgresql
+      state: started
+
+
+- name: rename table, set owner and truncate table
+  hosts: databases
+  remote_user: root
+  vars:
+    tablename: foo
+    tableowner: someuser
+
+  task:
+    -name: rename table {{ tablename }} to bar
+      postgresql_table:
+        table: {{ tablename }}
+        rename: bar
+
+    - name: set owner to someuser
+      postgresql_table:
+        name: {{ tablename }}
+        owner: {{tableowner }}
+
+    - name: truncate table
+      postgresql_table:
+        name: {{ tablename }}
+        truncate: yes
+
